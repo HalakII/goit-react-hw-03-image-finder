@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { ImagesPixabayApi } from '../Api/apiService';
+// import { ImagesPixabayApi } from '../Api/apiService';
 export class App extends Component {
   state = {};
   render() {
