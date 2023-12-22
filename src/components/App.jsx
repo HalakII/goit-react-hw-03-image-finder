@@ -18,6 +18,7 @@ export class App extends Component {
     largeImageURL: null,
     tags: '',
     error: null,
+    theEndOfImages: false,
   };
 
   async componentDidUpdate(prevProps, prevState) {
@@ -27,13 +28,20 @@ export class App extends Component {
         const allImages = await fetchImages(searchQuery, page);
         if (allImages.length === 0) {
           toast.success(
-            'Sorry, there are no more images matching your search query.'
+            'Sorry, there are no images matching your search query.'
           );
           return;
         }
         this.setState(prevState => ({
           images: [...prevState.images, ...allImages.hits],
         }));
+        const totalPages = Math.ceil(allImages.totalHits / 12);
+        if (page === totalPages) {
+          this.setState({ theEndOfImages: true });
+          toast.success(
+            'Sorry, there are no more images matching your search query.'
+          );
+        }
       } catch (error) {
         this.setState({ error: error.message });
       } finally {
@@ -57,7 +65,8 @@ export class App extends Component {
   };
 
   render() {
-    const { images, largeImageURL, showModal } = this.state;
+    const { images, largeImageURL, showModal, theEndOfImages } = this.state;
+    const showLoadMoreBtn = images.length > 0 && !theEndOfImages;
     return (
       <div className={css.app}>
         <Searchbar onSubmitForm={this.hadleSearchFormSubmit} />
@@ -65,7 +74,7 @@ export class App extends Component {
         {showModal && (
           <Modal largeImageURL={largeImageURL} onCloseModal={this.closeModal} />
         )}
-        {images.length > 0 && <Button onLoadMoreClick={this.loadMoreClick} />}
+        {showLoadMoreBtn && <Button onLoadMoreClick={this.loadMoreClick} />}
         <ToastContainer autoClose={3000} />
       </div>
     );
