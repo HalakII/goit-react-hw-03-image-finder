@@ -11,40 +11,42 @@ export class App extends Component {
   state = {
     searchQuery: '',
     page: 1,
-    images: null,
+    images: [],
     loading: false,
     showModal: false,
-    showLoadMoreBtn: false,
     showLoader: false,
-    largeImageURL: '',
+    largeImageURL: null,
     tags: '',
-    endCollection: false,
+    error: null,
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, page, largeImageURL, images } = this.state;
+  async componentDidUpdate(prevProps, prevState) {
+    const { searchQuery, page } = this.state;
     if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
-      fetchImages(searchQuery).then(({ hits }) => {
-        this.setState({ images: hits });
-      });
+      try {
+        const allImages = await fetchImages(searchQuery, page);
+        if (allImages.length === 0) {
+          toast.success(
+            'Sorry, there are no more images matching your search query.'
+          );
+          return;
+        }
+        this.setState(prevState => ({
+          images: [...prevState.images, ...allImages.hits],
+        }));
+      } catch (error) {
+        this.setState({ error: error.message });
+      } finally {
+      }
     }
-    if (prevState.largeImageURL !== largeImageURL) {
-      this.setState({ showModal: true });
-    }
-
-    // if (images.length === 0) {
-    //   toast.error('Images not found');
-    //   return;
-    // }
-    // this.setState({ showLoadMoreBtn: true });
   }
 
   closeModal = () => {
     this.setState({ showModal: false });
   };
 
-  showModal = (largeImageURL, tags) => {
-    this.setState({ largeImageURL, tags });
+  openModal = (largeImageURL, tags) => {
+    this.setState({ showModal: true, largeImageURL, tags });
   };
 
   hadleSearchFormSubmit = searchQuery => {
@@ -55,19 +57,15 @@ export class App extends Component {
   };
 
   render() {
-    const { images, largeImageURL, showLoadMoreBtn, showModal } = this.state;
+    const { images, largeImageURL, showModal } = this.state;
     return (
       <div className={css.app}>
         <Searchbar onSubmitForm={this.hadleSearchFormSubmit} />
-        <ImageGallery images={images} onClick={showModal} />
+        <ImageGallery images={images} onModalClick={this.openModal} />
         {showModal && (
-          <Modal
-            largeImageURL={largeImageURL}
-            tags={this.state.tags}
-            onCloseModal={this.closeModal}
-          />
+          <Modal largeImageURL={largeImageURL} onCloseModal={this.closeModal} />
         )}
-        {showLoadMoreBtn && <Button onClick={this.loadMoreClick} />}
+        {images.length > 0 && <Button onLoadMoreClick={this.loadMoreClick} />}
         <ToastContainer autoClose={3000} />
       </div>
     );

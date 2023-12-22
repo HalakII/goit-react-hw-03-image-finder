@@ -1,12 +1,20 @@
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import css from './ImageGallery.module.css';
 
-export const ImageGallery = ({ images, onClick }) => {
+export const ImageGallery = ({ images, onModalClick }) => {
   return (
     <ul className={css.imageGallery}>
-      {images?.map(image => (
-        <ImageGalleryItem key={image.id} image={image} onClick={onClick} />
-      ))}
+      {Array.isArray(images) &&
+        images.map(({ id, tags, webformatURL, largeImageURL }) => (
+          <ImageGalleryItem
+            key={id}
+            id={id}
+            tags={tags}
+            largeImageURL={largeImageURL}
+            webformatURL={webformatURL}
+            onModalClick={onModalClick}
+          />
+        ))}
     </ul>
   );
 };
