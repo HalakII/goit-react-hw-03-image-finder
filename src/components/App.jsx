@@ -4,8 +4,9 @@ import { fetchImages } from '../Api/apiService';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Modal } from './Modal/Modal';
-import css from './App.module.css';
 import { Button } from './Button/Button';
+import { Loader } from './Loader/Loader';
+import css from './App.module.css';
 
 export class App extends Component {
   state = {
@@ -25,6 +26,8 @@ export class App extends Component {
     const { searchQuery, page } = this.state;
     if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
       try {
+        this.setState({ showLoader: true });
+
         const allImages = await fetchImages(searchQuery, page);
         if (allImages.length === 0) {
           toast.success(
@@ -45,6 +48,7 @@ export class App extends Component {
       } catch (error) {
         this.setState({ error: error.message });
       } finally {
+        this.setState({ showLoader: false });
       }
     }
   }
@@ -65,7 +69,8 @@ export class App extends Component {
   };
 
   render() {
-    const { images, largeImageURL, showModal, theEndOfImages } = this.state;
+    const { images, largeImageURL, showModal, theEndOfImages, showLoader } =
+      this.state;
     const showLoadMoreBtn = images.length > 0 && !theEndOfImages;
     return (
       <div className={css.app}>
@@ -75,6 +80,7 @@ export class App extends Component {
           <Modal largeImageURL={largeImageURL} onCloseModal={this.closeModal} />
         )}
         {showLoadMoreBtn && <Button onLoadMoreClick={this.loadMoreClick} />}
+        {showLoader && <Loader />}
         <ToastContainer autoClose={3000} />
       </div>
     );
