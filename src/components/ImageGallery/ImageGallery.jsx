@@ -8,7 +8,6 @@ export const ImageGallery = ({ images, onModalClick }) => {
         images.map(({ id, tags, webformatURL, largeImageURL }) => (
           <ImageGalleryItem
             key={id}
-            id={id}
             tags={tags}
             largeImageURL={largeImageURL}
             webformatURL={webformatURL}

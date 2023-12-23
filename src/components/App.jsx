@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { fetchImages } from '../Api/apiService';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -19,34 +20,40 @@ export class App extends Component {
     largeImageURL: null,
     tags: '',
     error: null,
-    theEndOfImages: false,
+    isEmpty: false,
+    
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, page } = this.state;
-    if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
+  async componentDidUpdate(_, prevState) {
+    const { searchQuery, page, randomId } = this.state;
+    if (prevState.searchQuery !== searchQuery || prevState.page !== page || prevState.randomId !== randomId) {
       try {
         this.setState({ showLoader: true });
 
-        const allImages = await fetchImages(searchQuery, page);
-        if (allImages.length === 0) {
-          toast.success(
+        const {hits, totalHits} = await fetchImages(searchQuery, page);
+        if (hits.length === 0) {
+          toast.error(
             'Sorry, there are no images matching your search query.'
           );
           return;
         }
         this.setState(prevState => ({
-          images: [...prevState.images, ...allImages.hits],
+          images: [...prevState.images, ...hits],
         }));
-        const totalPages = Math.ceil(allImages.totalHits / 12);
+        const totalPages = Math.ceil(totalHits / 12);
+        console.log(totalPages);
         if (page === totalPages) {
-          this.setState({ theEndOfImages: true });
+          this.setState({ isEmpty: true });
           toast.success(
             'Sorry, there are no more images matching your search query.'
           );
         }
       } catch (error) {
         this.setState({ error: error.message });
+        toast.error(
+          `Sorry, ${error.message} 😭.`
+        );
+        return;
       } finally {
         this.setState({ showLoader: false });
       }
@@ -62,16 +69,15 @@ export class App extends Component {
   };
 
   hadleSearchFormSubmit = searchQuery => {
-    this.setState({ searchQuery, page: 1, images: [] });
+    this.setState({ searchQuery, page: 1, images: [], randomId: Math.random(), showModal: false, });
   };
   loadMoreClick = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
-    const { images, largeImageURL, showModal, theEndOfImages, showLoader } =
+    const { images, largeImageURL, showModal,  isEmpty, showLoader } =
       this.state;
-    const showLoadMoreBtn = images.length > 0 && !theEndOfImages;
     return (
       <div className={css.app}>
         <Searchbar onSubmitForm={this.hadleSearchFormSubmit} />
@@ -79,7 +85,7 @@ export class App extends Component {
         {showModal && (
           <Modal largeImageURL={largeImageURL} onCloseModal={this.closeModal} />
         )}
-        {showLoadMoreBtn && <Button onLoadMoreClick={this.loadMoreClick} />}
+        {images.length > 0 && !isEmpty && <Button onLoadMoreClick={this.loadMoreClick} />}
         {showLoader && <Loader />}
         <ToastContainer autoClose={3000} />
       </div>
