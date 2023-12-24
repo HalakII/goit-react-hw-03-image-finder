@@ -24,7 +24,7 @@ export class App extends Component {
   };
 
   async componentDidUpdate(_, prevState) {
-    const { searchQuery, page, randomId, totalPages} = this.state;
+    const { searchQuery, page, randomId} = this.state;
     if (prevState.searchQuery !== searchQuery || prevState.page !== page || prevState.randomId !== randomId) {
       try {
         this.setState({ showLoader: true });
