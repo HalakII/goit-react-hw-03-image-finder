@@ -37,15 +37,15 @@ export class App extends Component {
           return;
         }
        
-        this.setState(prevState => ({
-          images: [...prevState.images, ...hits],
-          totalPages: Math.ceil(totalHits / 12),
-        }));
-        if (page === totalPages) {
-          toast.success(
-            'Sorry, there are no more images matching your search query.'
-          );
-        }
+        const newTotalPages = Math.ceil(totalHits / 12);
+  this.setState((prevState) => ({
+    images: [...prevState.images, ...hits],
+    totalPages: newTotalPages,
+  }));
+
+  if (page === newTotalPages) {
+    toast.success('Sorry, there are no more images matching your search query.');
+  }
       } catch (error) {
         this.setState({ error: error.message });
         toast.error(
