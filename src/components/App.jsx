@@ -14,18 +14,16 @@ export class App extends Component {
     searchQuery: '',
     page: 1,
     images: [],
-    loading: false,
+    totalPages: 0,
     showModal: false,
     showLoader: false,
     largeImageURL: null,
     tags: '',
     error: null,
-    isEmpty: false,
-    
   };
 
   async componentDidUpdate(_, prevState) {
-    const { searchQuery, page, randomId } = this.state;
+    const { searchQuery, page, randomId, totalPages} = this.state;
     if (prevState.searchQuery !== searchQuery || prevState.page !== page || prevState.randomId !== randomId) {
       try {
         this.setState({ showLoader: true });
@@ -37,13 +35,12 @@ export class App extends Component {
           );
           return;
         }
+       
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
+          totalPages: Math.ceil(totalHits / 12),
         }));
-        const totalPages = Math.ceil(totalHits / 12);
-        console.log(totalPages);
         if (page === totalPages) {
-          this.setState({ isEmpty: true });
           toast.success(
             'Sorry, there are no more images matching your search query.'
           );
@@ -69,15 +66,16 @@ export class App extends Component {
   };
 
   hadleSearchFormSubmit = searchQuery => {
-    this.setState({ searchQuery, page: 1, images: [], randomId: Math.random(), showModal: false, });
+    this.setState({ searchQuery, page: 1, images: [], randomId: Math.random() });
   };
   loadMoreClick = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
-    const { images, largeImageURL, showModal,  isEmpty, showLoader } =
+    const { images, page, largeImageURL, showModal,  showLoader, totalPages} =
       this.state;
+      
     return (
       <div className={css.app}>
         <Searchbar onSubmitForm={this.hadleSearchFormSubmit} />
@@ -85,7 +83,7 @@ export class App extends Component {
         {showModal && (
           <Modal largeImageURL={largeImageURL} onCloseModal={this.closeModal} />
         )}
-        {images.length > 0 && !isEmpty && <Button onLoadMoreClick={this.loadMoreClick} />}
+        {images.length > 0 && totalPages !== page && !showLoader && <Button onLoadMoreClick={this.loadMoreClick} />}
         {showLoader && <Loader />}
         <ToastContainer autoClose={3000} />
       </div>
