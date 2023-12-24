@@ -20,6 +20,7 @@ export class App extends Component {
     largeImageURL: null,
     tags: '',
     error: null,
+    randomId: null,
   };
 
   async componentDidUpdate(_, prevState) {
@@ -65,8 +66,8 @@ export class App extends Component {
     this.setState({ showModal: true, largeImageURL, tags });
   };
 
-  hadleSearchFormSubmit = searchQuery => {
-    this.setState({ searchQuery, page: 1, images: [], randomId: Math.random() });
+  handleSearchFormSubmit = searchQuery => {
+    this.setState({ searchQuery, page: 1, images: [], randomId: Math.random(), totalPages:0, });
   };
   loadMoreClick = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
@@ -78,7 +79,7 @@ export class App extends Component {
       
     return (
       <div className={css.app}>
-        <Searchbar onSubmitForm={this.hadleSearchFormSubmit} />
+        <Searchbar onSubmitForm={this.handleSearchFormSubmit} />
         <ImageGallery images={images} onModalClick={this.openModal} />
         {showModal && (
           <Modal largeImageURL={largeImageURL} onCloseModal={this.closeModal} />
